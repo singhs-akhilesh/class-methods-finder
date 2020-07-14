@@ -1,7 +1,0 @@
-1. Parsing & Extracting methods from javac commands
-2. Performance issue while reading input stream of javac command for every .class file(time consuming)
-   Solution: Used Process builder command for multiple .class file and dumped the o/p to a single file & read the file at last.
-3. Problem to find the starting of class(compiled from .java info is not listing for few class file), here logic is failed.
-4. Finally used the com.sun.tools.classfile.ClassFile & com.sun.tools.classfile.ConstantPool to fetch all the method details.
-   Understanding and Extracting methods from constant pool is challenging. Using this we are not depending on javac command.
-5. Extracting .class file from jar, war and ear is difficult. Recursively unzip all the jar,war & ear till .class file to temp folder, read the information of .class file using constant pool. At last recursively delete all the .class files and folder.
