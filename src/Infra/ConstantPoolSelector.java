@@ -63,7 +63,17 @@ class ConstantPoolSelector implements ConstantPool.Visitor<Void, ConstantPoolEnt
     }
 
     @Override
+    public Void visitModule(ConstantPool.CONSTANT_Module_info info, ConstantPoolEntries constantPoolEntries) {
+        return null;
+    }
+
+    @Override
     public Void visitNameAndType(ConstantPool.CONSTANT_NameAndType_info info, ConstantPoolEntries p) {
+        return null;
+    }
+
+    @Override
+    public Void visitPackage(ConstantPool.CONSTANT_Package_info info, ConstantPoolEntries constantPoolEntries) {
         return null;
     }
 

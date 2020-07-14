@@ -7,7 +7,6 @@ import java.io.File;
 
 public class ClassInfo {
     public static String getPackageAndClassName(ClassFile cf) {
-        ConstantPoolEntries constantPoolEntries = ConstantPoolEntries.loadFrom(cf);
         ConstantPool constant_pool = cf.constant_pool;
         int thisClassIndex = cf.this_class;
         try {

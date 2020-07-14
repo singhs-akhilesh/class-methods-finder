@@ -15,25 +15,23 @@ public class UnzipJar {
 	private static final String DOT_WAR_FILE = ".war";
 	private static final String DOT_EAR_FILE = ".ear";
 
-//	public static void main(String[] args) throws IOException {
-//		unzipJar("C:\\projects\\ear\\extract\\", "C:\\projects\\ear\\HelloWorldApp.ear");
-//	}
-//
 	public static void unzipJar(String destinationDir, String jarPath) throws IOException {
 		File file = new File(jarPath);
 		System.out.println(jarPath);
 		JarFile jar = new JarFile(file);
-
 		for (Enumeration<JarEntry> enums = jar.entries(); enums.hasMoreElements();) {
 			JarEntry entry = (JarEntry) enums.nextElement();
- 
 			String fileName = destinationDir + File.separator + entry.getName();
 			File f = new File(fileName);
- 
-			if (fileName.endsWith("/")) {
+
+			if (fileName.endsWith(File.separator)) {
 				f.mkdirs();
+			} else{
+				File fl =new File(f.getParent());
+				if(!fl.exists()){
+					fl.mkdirs();
+				}
 			}
- 
 		}
  
 		for (Enumeration<JarEntry> enums = jar.entries(); enums.hasMoreElements();) {
@@ -42,7 +40,7 @@ public class UnzipJar {
 			String fileName = destinationDir+ File.separator + entry.getName();
 			File f = new File(fileName);
 
-			if (!fileName.endsWith("/") && isSupportedFileType(fileName)) {
+			if (!fileName.endsWith(File.separator) && isSupportedFileType(fileName)) {
 				InputStream is = jar.getInputStream(entry);
 				FileOutputStream fos = new FileOutputStream(f);
 				while (is.available() > 0) {
