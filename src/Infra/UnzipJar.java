@@ -26,12 +26,12 @@ public class UnzipJar {
 
 			if (fileName.endsWith(File.separator)) {
 				f.mkdirs();
-			} else{
+			}/* else{
 				File fl =new File(f.getParent());
 				if(!fl.exists()){
 					fl.mkdirs();
 				}
-			}
+			}*/
 		}
  
 		for (Enumeration<JarEntry> enums = jar.entries(); enums.hasMoreElements();) {
@@ -39,6 +39,16 @@ public class UnzipJar {
  
 			String fileName = destinationDir+ File.separator + entry.getName();
 			File f = new File(fileName);
+
+			//code for handling jars without folder structure e.g truffle-sl-1.0.0-rc6.jar
+			if(!f.exists()){
+				if(isSupportedFileType(fileName)){
+					File newFile = new File(fileName.replace(f.getName(),""));
+					if(!newFile.exists()){
+						newFile.mkdirs();
+					}
+				}
+			}
 
 			if (!fileName.endsWith(File.separator) && isSupportedFileType(fileName)) {
 				InputStream is = jar.getInputStream(entry);
