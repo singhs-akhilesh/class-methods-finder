@@ -44,9 +44,6 @@ public class DeprecatedMethodFinder {
         }
     }
 
-    public static void main1(String[] args) {
-        new DeprecatedMethodFinder().deleteTempFolders(new File("extract1594818146827\\"));
-    }
     public static void main(String[] args) throws Exception {
         DeprecatedMethodFinder deprecatedMethodFinder = new DeprecatedMethodFinder();
         deprecatedMethodFinder.processArguments(args);
