@@ -11,17 +11,24 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DeprecatedMethodFinder {
 
     private static final String PACKAGE_JAVA = "java/";
     private static final String PACKAGE_JAVAX = "javax/";
+    private static final String PACKAGE_JAVAFX = "javafx/";
     private static final String PACKAGE_COM_SUN = "com/sun/";
     private static final String PACKAGE_SUN_MISC = "com/misc";
     private static final String PACKAGE_JDK = "JDK/";
 
+    private static final String DOT_JAR_FILE = ".jar";
+    private static final String DOT_WAR_FILE = ".war";
+    private static final String DOT_EAR_FILE = ".ear";
+
     private static final String JAR_EXTRACT_LOCATION = "extract" + System.currentTimeMillis() + File.separator;
-    private List<String> supportedPackages = Arrays.asList(PACKAGE_JAVA, PACKAGE_JAVAX, PACKAGE_COM_SUN, PACKAGE_JDK, PACKAGE_SUN_MISC);
+    private List<String> supportedPackages = Arrays.asList(PACKAGE_JAVA, PACKAGE_JAVAX, PACKAGE_COM_SUN, PACKAGE_JDK, PACKAGE_SUN_MISC, PACKAGE_JAVAFX);
 
     Map<String, Set<String>> methodsClassMap = new LinkedHashMap<>();
     private static Properties prop = null;
@@ -37,6 +44,9 @@ public class DeprecatedMethodFinder {
         }
     }
 
+    public static void main1(String[] args) {
+        new DeprecatedMethodFinder().deleteTempFolders(new File("extract1594818146827\\"));
+    }
     public static void main(String[] args) throws Exception {
         DeprecatedMethodFinder deprecatedMethodFinder = new DeprecatedMethodFinder();
         deprecatedMethodFinder.processArguments(args);
@@ -70,14 +80,14 @@ public class DeprecatedMethodFinder {
 
         deprecatedMethodFinder.printDeprecatedMethodAndSuggestion(deprecatedMethodsOfApp, deprecatedMethodsDB);
 
-        System.out.println("Total Time taken "+((System.currentTimeMillis()-total))/1000);
+        System.out.println("Total Time taken "+((System.currentTimeMillis()-total))/1000 + " seconds");
     }
 
     public Map<String, Set<String>> findFromApp(String applicationPath) throws Exception {
         ApplicationClassFiles classFiles = new ApplicationClassFiles();
         long start = System.currentTimeMillis();
         List<String> classFileList = classFiles.get(applicationPath, JAR_EXTRACT_LOCATION);
-        System.out.println("Time taken to extract jars & read .class file locations from the specified path: "+((System.currentTimeMillis()-start))/1000);
+        System.out.println("Time taken to extract jars & read .class file locations from the specified path: "+((System.currentTimeMillis()-start))/1000+ " seconds");
         System.out.println("No of .class files found: "+classFileList.size());
         start = System.currentTimeMillis();
         MethodReference classMethodReference = new ClassMethodReference();
@@ -100,9 +110,11 @@ public class DeprecatedMethodFinder {
             }
         }
 
-        System.out.println("Time taken to extract methods from .class file: "+((System.currentTimeMillis()-start))/1000);
+        System.out.println("Time taken to extract methods from .class file: "+((System.currentTimeMillis()-start))/1000+ " seconds");
         //delete jar extracted folder
-        deleteTempFolders();
+        start = System.currentTimeMillis();
+        deleteTempFolders(new File(JAR_EXTRACT_LOCATION));
+        System.out.println("Time taken for deleting temp folders :" + ((System.currentTimeMillis() - start)/1000)+ " seconds");
         return methodsClassMap;
     }
 
@@ -132,7 +144,20 @@ public class DeprecatedMethodFinder {
         return methodName.contains("<init>");
     }
 
-    private void deleteTempFolders() throws IOException {
+    private void deleteTempFolders(File file){
+        System.out.println(file.getName());
+        if (!file.exists())
+            return;
+
+        if (file.isDirectory()) {
+            for (File f : file.listFiles()) {
+                //call recursively
+                deleteTempFolders(f);
+            }
+        }
+        System.out.println(file.delete());
+    }
+    /*private void deleteTempFolders() throws IOException {
         long start = System.currentTimeMillis();
         Path pathToBeDeleted = Paths.get(JAR_EXTRACT_LOCATION);
         if (pathToBeDeleted.toFile().exists()) {
@@ -141,8 +166,8 @@ public class DeprecatedMethodFinder {
                     .map(Path::toFile)
                     .forEach(File::delete);
         }
-        System.out.println("Time taken for deleting temp folders" + ((System.currentTimeMillis() - start)/1000));
-    }
+        System.out.println("Time taken for deleting temp folders :" + ((System.currentTimeMillis() - start)/1000)+ " seconds");
+    }*/
 
     private Map<String, Set<String>> searchAppExtractedMethodInDeprecatedDBList(final Map<String, Set<String>> extractedMethods, final Set<String> deprecatedMethodList) {
         long start = System.currentTimeMillis();
@@ -152,11 +177,12 @@ public class DeprecatedMethodFinder {
                 deprecatedMethodsInApplication.put(extractedMethod, extractedMethods.get(extractedMethod));
             }
         }
-        System.out.println("Time taken to search deprecated method in DB" + ((System.currentTimeMillis() - start)/1000));
+        System.out.println("Time taken to search deprecated method in DB" + ((System.currentTimeMillis() - start)/1000)+ " seconds");
         return deprecatedMethodsInApplication;
     }
 
     private void printDeprecatedMethodAndSuggestion(final Map<String, Set<String>> deprecatedMethodsOfApp, final Map<String, String> deprecatedMethodsDB){
+        System.out.println("Total Deprecated method found: "+deprecatedMethodsOfApp.size());
         for(String deprecatedMethod : deprecatedMethodsOfApp.keySet()){
             System.out.println("Deprecated Method\n-----------------\n"+deprecatedMethod+"\n");
             System.out.println("Suggestion(if any)\n------------------\n"+deprecatedMethodsDB.get(deprecatedMethod)+"\n");
@@ -176,6 +202,22 @@ public class DeprecatedMethodFinder {
             System.out.println("E.g. migration-util c:/project/xyx 14");
             System.exit(1);
         }
+    }
+
+    private List<String> getAllJarTypesFileFromExtractedLocation() throws Exception{
+            try (Stream<Path> paths = Files.walk(Paths.get(JAR_EXTRACT_LOCATION))) {
+                return paths
+                        .filter(Files::isRegularFile)
+                        .map(Path::toString)
+                        .filter(this::isSupportedFileType)
+                        .collect(Collectors.toList());
+            }
+    }
+
+    private boolean isSupportedFileType(String fileName){
+        return fileName.endsWith(DOT_JAR_FILE)
+               || fileName.endsWith(DOT_WAR_FILE)
+               || fileName.endsWith(DOT_EAR_FILE);
     }
 
 }

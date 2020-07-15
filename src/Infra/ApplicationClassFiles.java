@@ -40,7 +40,7 @@ public class ApplicationClassFiles {
             return paths
                     .filter(Files::isRegularFile)
                     .map(Path::toString)
-                    .filter(file-> isSupportedFileType(file))
+                    .filter(this::isSupportedFileType)
                     .collect(Collectors.toList());
         }
     }
