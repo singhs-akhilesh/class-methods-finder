@@ -6,10 +6,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DeprecatedAPIWebCrawler {
@@ -44,10 +41,16 @@ public class DeprecatedAPIWebCrawler {
                             String data = tableRows.select(TABLE_DATA_SELECTOR).text();
                             if (!header.isEmpty()) {
                                 rowHeaderDataMap.put(header, data);
+                                if(isGenericMethod(header)){
+                                    rowHeaderDataMap.put(replaceGenericTypesToObject(header), data);
+                                }
                             } else if(!data.isEmpty()){
                                 header = data;
                                 data = tableRows.select(DIV_SPAN_SELECTOR).text();
                                 rowHeaderDataMap.put(header,data);
+                                if(isGenericMethod(header)){
+                                    rowHeaderDataMap.put(replaceGenericTypesToObject(header), data);
+                                }
                             }
                         }
                     }
@@ -56,5 +59,52 @@ public class DeprecatedAPIWebCrawler {
             }
         }
         return deprecatedItemAndRecommendationMap;
+    }
+    private boolean isGenericMethod(String methodSignature){
+        List<String> genericTypeList = getGenericTypesList();
+        for(String param : getIndividualMethodParam(methodSignature)){
+            if(genericTypeList.contains(param)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String[] getIndividualMethodParam(String methodSignature){
+        int paramStartIndex = methodSignature.indexOf("(");
+        int paramEndIndex = methodSignature.lastIndexOf(")");
+        if(paramStartIndex < 0 || paramEndIndex < 0)
+            return new String[]{};
+        String methodParamsWithoutBracket = methodSignature.substring(paramStartIndex + 1, paramEndIndex);
+        String[] individualMethodParam = methodParamsWithoutBracket.split(",");
+        for(int i = 0; i < individualMethodParam.length; i++){
+            individualMethodParam[i] = individualMethodParam[i].trim();
+        }
+        return individualMethodParam;
+    }
+
+    private List<String> getGenericTypesList(){
+        return Arrays.asList("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z");
+    }
+
+    private String replaceGenericTypesToObject(String methodSignature){
+        String[] individualMethodParam = getIndividualMethodParam(methodSignature);
+        List<String> genericTypeList = getGenericTypesList();
+        for(int i = 0; i < individualMethodParam.length; i++){
+            if(genericTypeList.contains(individualMethodParam[i])){
+                individualMethodParam[i] = "Object";
+            }
+        }
+        return buildMethodSignatureFromIndividualParam(methodSignature, individualMethodParam);
+    }
+
+    private String buildMethodSignatureFromIndividualParam(String methodSignature, String[] individualMethodParam){
+        int paramStartIndex = methodSignature.indexOf("(");
+        int paramEndIndex = methodSignature.lastIndexOf(")");
+        String methodParam = "";
+        for(String param : individualMethodParam){
+            methodParam = methodParam + param + ", ";
+        }
+        return methodSignature.substring(0, paramStartIndex) + "(" + methodParam.substring(0, methodParam.length() - 2)+")";
     }
 }
