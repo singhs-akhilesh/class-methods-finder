@@ -109,9 +109,8 @@ public class DeprecatedMethodFinder {
 
         System.out.println("Time taken to extract methods from .class file: "+((System.currentTimeMillis()-start))/1000+ " seconds");
         //delete jar extracted folder
-        start = System.currentTimeMillis();
-        deleteTempFolders(new File(JAR_EXTRACT_LOCATION));
-        System.out.println("Time taken for deleting temp folders :" + ((System.currentTimeMillis() - start)/1000)+ " seconds");
+        deleteTempFolders();
+        //deleteTempFolders(new File(JAR_EXTRACT_LOCATION));
         return methodsClassMap;
     }
 
@@ -141,8 +140,7 @@ public class DeprecatedMethodFinder {
         return methodName.contains("<init>");
     }
 
-    private void deleteTempFolders(File file){
-        System.out.println(file.getName());
+    /*private void deleteTempFolders(File file){
         if (!file.exists())
             return;
 
@@ -152,9 +150,14 @@ public class DeprecatedMethodFinder {
                 deleteTempFolders(f);
             }
         }
-        System.out.println(file.delete());
-    }
-    /*private void deleteTempFolders() throws IOException {
+        String fileName = file.getName();
+        boolean isRead = file.canRead();
+        boolean isWrite = file.canWrite();
+        boolean isExecute = file.canExecute();
+        if(!file.delete())
+            System.out.println(fileName +" Read :"+isRead+" Write :"+isWrite+" Execute :"+isExecute);
+    }*/
+    private void deleteTempFolders() throws IOException {
         long start = System.currentTimeMillis();
         Path pathToBeDeleted = Paths.get(JAR_EXTRACT_LOCATION);
         if (pathToBeDeleted.toFile().exists()) {
@@ -164,7 +167,7 @@ public class DeprecatedMethodFinder {
                     .forEach(File::delete);
         }
         System.out.println("Time taken for deleting temp folders :" + ((System.currentTimeMillis() - start)/1000)+ " seconds");
-    }*/
+    }
 
     private Map<String, Set<String>> searchAppExtractedMethodInDeprecatedDBList(final Map<String, Set<String>> extractedMethods, final Set<String> deprecatedMethodList) {
         long start = System.currentTimeMillis();
