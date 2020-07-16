@@ -110,7 +110,6 @@ public class DeprecatedMethodFinder {
         System.out.println("Time taken to extract methods from .class file: "+((System.currentTimeMillis()-start))/1000+ " seconds");
         //delete jar extracted folder
         deleteTempFolders();
-        //deleteTempFolders(new File(JAR_EXTRACT_LOCATION));
         return methodsClassMap;
     }
 
@@ -140,23 +139,6 @@ public class DeprecatedMethodFinder {
         return methodName.contains("<init>");
     }
 
-    /*private void deleteTempFolders(File file){
-        if (!file.exists())
-            return;
-
-        if (file.isDirectory()) {
-            for (File f : file.listFiles()) {
-                //call recursively
-                deleteTempFolders(f);
-            }
-        }
-        String fileName = file.getName();
-        boolean isRead = file.canRead();
-        boolean isWrite = file.canWrite();
-        boolean isExecute = file.canExecute();
-        if(!file.delete())
-            System.out.println(fileName +" Read :"+isRead+" Write :"+isWrite+" Execute :"+isExecute);
-    }*/
     private void deleteTempFolders() throws IOException {
         long start = System.currentTimeMillis();
         Path pathToBeDeleted = Paths.get(JAR_EXTRACT_LOCATION);

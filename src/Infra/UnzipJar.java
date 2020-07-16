@@ -13,11 +13,6 @@ public class UnzipJar {
     private static final String DOT_EAR_FILE = ".ear";
 
     public static void unzipJar(String destinationDir, String jarPath) throws IOException {
-		/*if(jarPath.contains("truffle-sl-1.0.0-rc6.jar")) {
-			System.out.println("ignoring jar"+jarPath);
-			return;
-		}*/
-        long start = System.currentTimeMillis();
         File file = new File(jarPath);
         System.out.println(jarPath);
         JarFile jar = new JarFile(file);
@@ -41,16 +36,6 @@ public class UnzipJar {
 
             String fileName = destinationDir + File.separator + entry.getName();
             File f = new File(fileName);
-
-            //code for handling jars without folder structure e.g truffle-sl-1.0.0-rc6.jar
-			/*if(!f.exists()){
-				if(isSupportedFileType(fileName)){
-					File newFile = new File(fileName.replace(f.getName(),""));
-					if(!newFile.exists()){
-						newFile.mkdirs();
-					}
-				}
-			}*/
             if (!fileName.endsWith(File.separator) && isSupportedFileType(fileName)) {
                 InputStream is = jar.getInputStream(entry);
                 OutputStream os = new FileOutputStream(f);
@@ -68,8 +53,6 @@ public class UnzipJar {
             }
         }
         jar.close();
-        long end = System.currentTimeMillis();
-        System.out.println("Time taken to process jar file : " + (end - start) + " in mills  " + (end - start) / 1000 + " in sec");
     }
 
     private static boolean isSupportedFileType(String fileName) {
